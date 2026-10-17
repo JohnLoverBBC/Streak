@@ -1,0 +1,170 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Streak</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:#111}
+#app{height:100%;max-width:480px;margin:auto;display:flex;flex-direction:column;font-family:Helvetica,Arial,sans-serif;color:var(--text);background:var(--bg);position:relative;overflow:hidden}
+/* iOS 6 */
+.s-ios{--bg:#c9c3b6 repeating-linear-gradient(45deg,rgba(0,0,0,.05) 0 2px,transparent 2px 4px),repeating-linear-gradient(-45deg,rgba(255,255,255,.06) 0 2px,transparent 2px 4px);--nav:linear-gradient(#a3b6d1,#6f8cb5 50%,#5b7ba8 51%,#5a79a5);--navtext:#fff;--card:#fff;--text:#222;--sub:#4c566c;--accent:linear-gradient(#7aa0d8,#3b6fc0 50%,#2a5bb0 51%,#3a70c4);--done:radial-gradient(circle at 35% 30%,#d9ffb0,#5cb82a 55%,#2f7a10);--rev:radial-gradient(circle at 35% 30%,#ffe0a8,#f09a1c 55%,#a85d00);--tab:linear-gradient(#4a4a4a,#1c1c1c 50%,#000 51%,#222);--r:10px;--line:#b9b9b9}
+.s-ios .nav{text-shadow:0 -1px 0 rgba(0,0,0,.45);border-bottom:1px solid #2c4160;box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.s-ios .card{border:1px solid #a0a0a0;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.s-ios .btn{border:1px solid #1f3f75;text-shadow:0 -1px 0 rgba(0,0,0,.4);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 1px 1px rgba(0,0,0,.3)}
+.s-ios .day.today{outline:2px solid #3b6fc0;outline-offset:-2px}
+.s-ios .day{border-radius:6px}
+/* Modern */
+.s-modern{--bg:#f2f2f7;--nav:#f9f9fb;--navtext:#111;--card:#fff;--text:#111;--sub:#8a8a8e;--accent:#007aff;--done:#34c759;--rev:#ff9f0a;--tab:#f9f9fb;--r:16px;--line:#e5e5ea}
+.s-modern .nav{border-bottom:1px solid var(--line)}
+.s-modern .tabbar{border-top:1px solid var(--line)}
+.s-modern .tab{color:#8a8a8e}.s-modern .tab.on{color:#007aff}
+.s-modern .day{border-radius:50%}
+.s-modern .day.today{outline:2px solid #007aff;outline-offset:-2px}
+.s-modern .btn{border-radius:12px}
+/* Material */
+.s-material{--bg:#fef7ff;--nav:#6750a4;--navtext:#fff;--card:#f3edf7;--text:#1d1b20;--sub:#49454f;--accent:#6750a4;--done:#6750a4;--rev:#b3261e;--tab:#f3edf7;--r:12px;--line:#cac4d0}
+.s-material .nav{box-shadow:0 2px 4px rgba(0,0,0,.3);text-align:left;justify-content:flex-start}
+.s-material .tab{color:#49454f}.s-material .tab.on{color:#6750a4;font-weight:700}
+.s-material .day{border-radius:50%}
+.s-material .day.today{outline:2px solid #6750a4;outline-offset:-2px}
+.s-material .btn{border-radius:20px;text-transform:uppercase;letter-spacing:.5px;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.s-material .done,.s-material .rev{color:#fff}
+.nav{flex:none;height:46px;background:var(--nav);color:var(--navtext);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;padding:0 14px;position:relative}
+.nav .gem{position:absolute;right:12px;font-size:14px;font-weight:700}
+main{flex:1;overflow-y:auto;padding:12px}
+.scr{display:none}.scr.on{display:block}
+.card{background:var(--card);border-radius:var(--r);margin-bottom:14px;overflow:hidden}
+.pad{padding:12px}
+.stats{display:flex;text-align:center}
+.stats div{flex:1;padding:10px 4px;border-right:1px solid var(--line)}.stats div:last-child{border:0}
+.stats b{display:block;font-size:26px}.stats span{font-size:12px;color:var(--sub)}
+.cal-h{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;font-weight:700;font-size:17px}
+.arrow{width:34px;height:30px;border:0;background:none;color:var(--text);font-size:20px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 8px 10px}
+.dow{font-size:11px;text-align:center;color:var(--sub);font-weight:700}
+.day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:15px;background:rgba(128,128,128,.1);cursor:pointer;border:0;color:var(--text);padding:0}
+.day.blank{background:none;cursor:default}
+.day.done{background:var(--done);color:#fff;font-weight:700}
+.day.rev{background:var(--rev);color:#fff;font-weight:700}
+.s-ios .day.done,.s-ios .day.rev{box-shadow:inset 0 -2px 3px rgba(0,0,0,.3),0 1px 1px rgba(0,0,0,.3);text-shadow:0 -1px 0 rgba(0,0,0,.4);border-radius:50%}
+.day.miss{opacity:.9;background:rgba(200,50,50,.15)}
+.day.fut{opacity:.35;cursor:default}
+.btn{display:block;width:100%;padding:12px;background:var(--accent);color:#fff;font-size:17px;font-weight:700;border:0;border-radius:8px;cursor:pointer;margin-top:8px}
+.btn.off{filter:grayscale(1);opacity:.55}
+.row{display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid var(--line);font-size:16px}
+.row:last-child{border:0}
+.row input[type=text],.row input[type=time]{border:0;text-align:right;font-size:16px;background:none;color:var(--sub);width:55%;font-family:inherit}
+.sw{width:76px;height:28px;border-radius:14px;background:#aaa;position:relative;cursor:pointer;flex:none;transition:.2s}
+.sw::before{content:"OFF";position:absolute;right:10px;top:6px;font-size:12px;font-weight:700;color:#fff}
+.sw::after{content:"";position:absolute;left:1px;top:1px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.5);transition:.2s}
+.sw.on{background:#3b7fd8}.sw.on::before{content:"ON";right:auto;left:12px}.sw.on::after{left:49px}
+.s-modern .sw,.s-material .sw{width:50px;height:28px}
+.s-modern .sw::before,.s-material .sw::before{display:none}
+.s-modern .sw.on{background:#34c759}.s-modern .sw.on::after,.s-material .sw.on::after{left:23px}
+.s-material .sw.on{background:#6750a4}
+.sub{font-size:13px;color:var(--sub);padding:0 4px 6px;text-transform:uppercase;font-weight:700}
+.skin{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--line)}.skin:last-child{border:0}
+.sw-prev{width:46px;height:46px;border-radius:10px;flex:none}
+.skin .t{flex:1}.skin small{color:var(--sub);display:block}
+.skin .btn{width:auto;margin:0;padding:8px 14px;font-size:14px}
+.tabbar{flex:none;display:flex;background:var(--tab)}
+.s-ios .tabbar{border-top:1px solid #000}
+.tab{flex:1;padding:8px 0 7px;text-align:center;font-size:11px;color:#aaa;border:0;background:none;cursor:pointer;font-family:inherit}
+.tab i{display:block;font-style:normal;font-size:22px}
+.s-ios .tab.on{color:#fff;background:linear-gradient(#555,#2a2a2a)}
+#toast{position:absolute;left:50%;bottom:80px;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:10px 16px;border-radius:14px;font-size:14px;opacity:0;transition:.3s;pointer-events:none;text-align:center;max-width:90%}
+#toast.on{opacity:1}
+.note{font-size:13px;color:var(--sub);padding:2px 6px 12px;line-height:1.4}
+</style></head><body>
+<div id="app" class="s-ios">
+<div class="nav"><span id="ttl">Streak</span><span class="gem" id="gemTop"></span></div>
+<main>
+<section class="scr on" id="s0">
+ <div class="card stats"><div><b id="cur">0</b><span>Current</span></div><div><b id="best">0</b><span>Best</span></div><div><b id="gems">0</b><span>Gems 💎</span></div></div>
+ <div class="card"><div class="cal-h"><button class="arrow" id="pv">◀</button><span id="mt"></span><button class="arrow" id="nx">▶</button></div><div class="grid" id="dows"></div><div class="grid" id="cal"></div></div>
+ <button class="btn" id="chk">Check in today</button>
+ <div class="note" id="revNote"></div>
+</section>
+<section class="scr" id="s1">
+ <div class="sub">Skins</div><div class="card" id="skins"></div>
+ <div class="note">Every week you don’t use your revive, it turns into 1 gem 💎 on Monday.</div>
+</section>
+<section class="scr" id="s2">
+ <div class="sub">Habit</div><div class="card">
+  <div class="row"><span>Name</span><input type="text" id="hn"></div>
+  <div class="row"><span>Week starts Monday</span><div class="sw" id="wk"></div></div></div>
+ <div class="sub">Alerts</div><div class="card">
+  <div class="row"><span>Daily reminder</span><div class="sw" id="rm"></div></div>
+  <div class="row"><span>Reminder time</span><input type="time" id="rt"></div>
+  <div class="row"><span>Vibration</span><div class="sw" id="vb"></div></div></div>
+ <div class="sub">Data</div><div class="card"><div class="row" id="reset" style="color:#c0392b;cursor:pointer;justify-content:center;font-weight:700">Reset all data</div></div>
+ <div class="note">Reminders are stored as a preference only; install as an Android app wrapper to get real notifications.</div>
+</section>
+</main>
+<div class="tabbar"><button class="tab on" data-t="0"><i>📅</i>Calendar</button><button class="tab" data-t="1"><i>💎</i>Shop</button><button class="tab" data-t="2"><i>⚙️</i>Settings</button></div>
+<div id="toast"></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const K='streak_v1';
+const SK={ios:{n:'iOS 6',d:'Linen, gloss and glass',c:0,bg:'linear-gradient(#a3b6d1,#4d6c98)'},modern:{n:'Modern',d:'Clean, flat and bright',c:3,bg:'#007aff'},material:{n:'Material',d:'Android Material UI',c:5,bg:'#6750a4'}};
+const def=()=>({name:'My streak',done:{},rev:{},aw:{},gems:0,skin:'ios',own:['ios'],mon:true,rm:false,rt:'20:00',vb:true,start:key(new Date())});
+function key(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function pd(k){const[a,b,c]=k.split('-');return new Date(+a,b-1,+c)}
+let st;try{st=Object.assign(def(),JSON.parse(localStorage.getItem(K)||'{}'))}catch(e){st=def()}
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(st))}catch(e){}};
+const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+function wkStart(d){const x=new Date(d),o=st.mon?(x.getDay()+6)%7:x.getDay();x.setDate(x.getDate()-o);return x}
+let view=today();view.setDate(1);
+function award(){let w=wkStart(pd(st.start)),cur=key(wkStart(today())),n=0;
+ while(key(w)<cur){const k=key(w);if(!st.aw[k]){st.aw[k]=1;if(!st.rev[k]){st.gems++;n++}}w.setDate(w.getDate()+7)}
+ if(n){save();setTimeout(()=>toast('💎 +'+n+' gem'+(n>1?'s':'')+' from unused revive!'),400)}}
+function status(k){return st.done[k]||0}
+function streaks(){const t=today();let c=0,d=new Date(t);if(!status(key(d)))d.setDate(d.getDate()-1);
+ while(status(key(d))){c++;d.setDate(d.getDate()-1)}
+ let b=0,r=0,x=pd(st.start);while(x<=t){if(status(key(x))){r++;b=Math.max(b,r)}else if(key(x)!==key(t))r=0;x.setDate(x.getDate()+1)}
+ return[c,Math.max(b,c)]}
+const revAvail=()=>!st.rev[key(wkStart(today()))];
+function buzz(){if(st.vb&&navigator.vibrate)navigator.vibrate(30)}
+let tt;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2200)}
+function render(){
+ $('app').className='s-'+st.skin;$('ttl').textContent=st.name;$('gemTop').textContent='💎 '+st.gems;
+ const[c,b]=streaks();$('cur').textContent=c;$('best').textContent=b;$('gems').textContent=st.gems;
+ const ds=st.mon?['M','T','W','T','F','S','S']:['S','M','T','W','T','F','S'];
+ $('dows').innerHTML=ds.map(x=>'<div class="dow">'+x+'</div>').join('');
+ $('mt').textContent=view.toLocaleString('en',{month:'long',year:'numeric'});
+ const first=(view.getDay()+(st.mon?6:0))%7,n=new Date(view.getFullYear(),view.getMonth()+1,0).getDate(),t=today(),tk=key(t);let h='';
+ for(let i=0;i<first;i++)h+='<div class="day blank"></div>';
+ for(let i=1;i<=n;i++){const d=new Date(view.getFullYear(),view.getMonth(),i),k=key(d),s=status(k);
+  let cl='day';if(s==1)cl+=' done';else if(s==2)cl+=' rev';else if(d>t)cl+=' fut';else if(k>=st.start&&k<tk)cl+=' miss';
+  if(k==tk)cl+=' today';h+='<button class="'+cl+'" data-k="'+k+'">'+(s==2?'⟳':i)+'</button>'}
+ $('cal').innerHTML=h;
+ const dn=status(tk);$('chk').textContent=dn?'Checked in ✓ (tap to undo)':'Check in today';
+ $('revNote').innerHTML=revAvail()?'🔄 Revive ready this week. Tap a missed (red) day from the last 7 days to restore it.':'🔄 Revive used this week. A new one arrives next week.';
+ $('skins').innerHTML=Object.keys(SK).map(id=>{const s=SK[id],o=st.own.includes(id),a=st.skin==id;
+  return '<div class="skin"><div class="sw-prev" style="background:'+s.bg+'"></div><div class="t"><b>'+s.n+'</b><small>'+s.d+'</small></div><button class="btn'+(a?' off':'')+'" data-s="'+id+'">'+(a?'Active':o?'Apply':'💎 '+s.c)+'</button></div>'}).join('');
+ $('hn').value=st.name;$('rt').value=st.rt;
+ [['wk','mon'],['rm','rm'],['vb','vb']].forEach(([i,k])=>$(i).classList.toggle('on',!!st[k]));
+ save()}
+$('cal').onclick=e=>{const b=e.target.closest('.day');if(!b||!b.dataset.k)return;const k=b.dataset.k,t=today(),tk=key(t),s=status(k);
+ if(k==tk){toggleToday();return}
+ if(k>tk||s)return;
+ if(k<st.start){toast('That’s before you started.');return}
+ const diff=(t-pd(k))/864e5;
+ if(diff>7){toast('Revive only reaches back 7 days.');return}
+ if(!revAvail()){toast('Revive already used this week.');return}
+ if(confirm('Use this week’s revive on '+k+'?')){st.done[k]=2;st.rev[key(wkStart(t))]=k;buzz();toast('Streak revived! 🔄');render()}};
+function toggleToday(){const k=key(today());if(st.done[k]==1)delete st.done[k];else{st.done[k]=1;toast('Streak continued! 🔥')}buzz();render()}
+$('chk').onclick=toggleToday;
+$('pv').onclick=()=>{view.setMonth(view.getMonth()-1);render()};
+$('nx').onclick=()=>{view.setMonth(view.getMonth()+1);render()};
+$('skins').onclick=e=>{const b=e.target.closest('[data-s]');if(!b)return;const id=b.dataset.s,s=SK[id];
+ if(!st.own.includes(id)){if(st.gems<s.c){toast('Need '+s.c+' gems. You have '+st.gems+'.');return}st.gems-=s.c;st.own.push(id);toast('Unlocked '+s.n+'!')}
+ st.skin=id;buzz();render()};
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x==t));document.querySelectorAll('.scr').forEach((s,i)=>s.classList.toggle('on',i==t.dataset.t))});
+[['wk','mon'],['rm','rm'],['vb','vb']].forEach(([i,k])=>$(i).onclick=()=>{st[k]=!st[k];render()});
+$('hn').oninput=e=>{st.name=e.target.value||'My streak';$('ttl').textContent=st.name;save()};
+$('rt').onchange=e=>{st.rt=e.target.value;save()};
+$('reset').onclick=()=>{if(confirm('Erase all streak data, gems and skins?')){st=def();view=today();view.setDate(1);render()}};
+award();render();
+</script></body></html>
