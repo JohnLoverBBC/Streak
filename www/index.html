@@ -98,7 +98,7 @@ main{flex:1;overflow-y:auto;padding:12px}
   <div class="row"><span>Reminder time</span><input type="time" id="rt"></div>
   <div class="row"><span>Vibration</span><div class="sw" id="vb"></div></div></div>
  <div class="sub">Data</div><div class="card"><div class="row" id="reset" style="color:#c0392b;cursor:pointer;justify-content:center;font-weight:700">Reset all data</div></div>
- <div class="note">Reminders are stored as a preference only; install as an Android app wrapper to get real notifications.</div>
+ <div class="note">Daily reminders work in the installed Android app and will ask for notification permission.</div>
 </section>
 </main>
 <div class="tabbar"><button class="tab on" data-t="0"><i>📅</i>Calendar</button><button class="tab" data-t="1"><i>💎</i>Shop</button><button class="tab" data-t="2"><i>⚙️</i>Settings</button></div>
@@ -162,9 +162,23 @@ $('skins').onclick=e=>{const b=e.target.closest('[data-s]');if(!b)return;const i
  if(!st.own.includes(id)){if(st.gems<s.c){toast('Need '+s.c+' gems. You have '+st.gems+'.');return}st.gems-=s.c;st.own.push(id);toast('Unlocked '+s.n+'!')}
  st.skin=id;buzz();render()};
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x==t));document.querySelectorAll('.scr').forEach((s,i)=>s.classList.toggle('on',i==t.dataset.t))});
-[['wk','mon'],['rm','rm'],['vb','vb']].forEach(([i,k])=>$(i).onclick=()=>{st[k]=!st[k];render()});
+[['wk','mon'],['rm','rm'],['vb','vb']].forEach(([i,k])=>$(i).onclick=()=>{st[k]=!st[k];render();if(k=='rm'||k=='mon')syncRem(k=='rm')});
 $('hn').oninput=e=>{st.name=e.target.value||'My streak';$('ttl').textContent=st.name;save()};
-$('rt').onchange=e=>{st.rt=e.target.value;save()};
+$('rt').onchange=e=>{st.rt=e.target.value;save();syncRem(true)};
 $('reset').onclick=()=>{if(confirm('Erase all streak data, gems and skins?')){st=def();view=today();view.setDate(1);render()}};
-award();render();
+async function syncRem(ask){
+ const LN=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.LocalNotifications;
+ if(!LN){if(ask&&st.rm)toast('Notifications only work in the installed app.');return}
+ try{
+  await LN.cancel({notifications:[{id:1}]});
+  if(!st.rm)return;
+  let p=await LN.checkPermissions();
+  if(p.display!=='granted'&&ask)p=await LN.requestPermissions();
+  if(p.display!=='granted'){st.rm=false;render();if(ask)toast('Allow notifications in Android settings.');return}
+  const[h,m]=st.rt.split(':').map(Number);
+  await LN.schedule({notifications:[{id:1,title:st.name,body:'Don’t break your streak! Check in today 🔥',schedule:{on:{hour:h,minute:m},allowWhileIdle:true}}]});
+  if(ask)toast('Reminder set for '+st.rt);
+ }catch(e){toast('Notification error: '+(e.message||e))}
+}
+award();render();syncRem(false);
 </script></body></html>
