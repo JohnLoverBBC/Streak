@@ -1,31 +1,22 @@
 name: Build APK
 on:
   push:
-    branches: [main, master]
   workflow_dispatch:
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
-      - name: Install dependencies
-        run: npm install
-      - name: Add Android platform
-        run: npx cap add android
-      - name: Sync web app
-        run: npx cap sync android
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.9
       - name: Build debug APK
-        working-directory: android
-        run: ./gradlew assembleDebug
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+        run: gradle assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
         with:
           name: streak-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
